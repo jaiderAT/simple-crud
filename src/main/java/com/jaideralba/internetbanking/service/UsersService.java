@@ -33,6 +33,7 @@ public class UsersService implements Users {
 
     @Override
     public User create(User user) {
+        clearUserId(user);
         UserEntity entity = mapper.toEntity(user);
         User createdUser = mapper.toModel(repository.save(entity));
         return createdUser;
@@ -70,5 +71,9 @@ public class UsersService implements Users {
 
     private boolean isFilled(Long id) {
         return Objects.nonNull(id) && id > 0;
+    }
+
+    private void clearUserId(User user) {
+        user.setId(null);
     }
 }

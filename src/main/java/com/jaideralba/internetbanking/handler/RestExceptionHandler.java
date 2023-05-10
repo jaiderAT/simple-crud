@@ -12,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,24 +21,28 @@ import java.util.stream.Collectors;
 public class RestExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleGenericException(Exception exception){
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<CustomError> handleGenericException(Exception exception){
         return new ResponseEntity<>(new CustomError("Erro inesperado", HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 exception.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({InvalidUserIdException.class, UserNotFoundException.class})
-    public ResponseEntity<?> handleUserNotFoundException(Exception exception){
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<CustomError> handleUserNotFoundException(Exception exception){
         return new ResponseEntity<>(new CustomError("Usuário não encontrado", HttpStatus.NOT_FOUND.value(),
                 exception.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationError(MethodArgumentNotValidException exception){
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ValidationError> handleValidationError(MethodArgumentNotValidException exception){
         return new ResponseEntity<>(getValidationErrors(exception), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception){
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<CustomError> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception){
         return new ResponseEntity<>(new CustomError("Erro inesperado ao realizar parse da requisição",
                 HttpStatus.BAD_REQUEST.value(), exception.getMessage()), HttpStatus.BAD_REQUEST);
     }
