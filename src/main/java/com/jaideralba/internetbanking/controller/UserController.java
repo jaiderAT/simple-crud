@@ -2,6 +2,7 @@ package com.jaideralba.internetbanking.controller;
 
 import com.jaideralba.internetbanking.model.User;
 import com.jaideralba.internetbanking.service.UsersService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping
-    User create(@RequestBody User user) {
+    User create(@RequestBody @Valid User user) {
         return service.create(user);
     }
 
