@@ -1,5 +1,7 @@
 package com.jaideralba.internetbanking.handler;
 
+import com.jaideralba.internetbanking.exception.InvalidUserIdException;
+import com.jaideralba.internetbanking.exception.UserNotFoundException;
 import com.jaideralba.internetbanking.model.error.CustomError;
 import com.jaideralba.internetbanking.model.error.ValidationError;
 import com.jaideralba.internetbanking.model.error.ValidationErrorDetails;
@@ -21,6 +23,12 @@ public class RestExceptionHandler {
     public ResponseEntity<?> handleGenericException(Exception exception){
         return new ResponseEntity<>(new CustomError("Erro inesperado", HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 exception.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({InvalidUserIdException.class, UserNotFoundException.class})
+    public ResponseEntity<?> handleUserNotFoundException(Exception exception){
+        return new ResponseEntity<>(new CustomError("Usuário não encontrado", HttpStatus.NOT_FOUND.value(),
+                exception.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -9,9 +9,9 @@ public interface Users {
 
     User create(User user);
 
-    User update(User user, Long id);
+    User update(User user);
 
-    User updatePartially(User user, Long id);
+    User updatePartially(User user);
 
     void delete(Long id);
 
