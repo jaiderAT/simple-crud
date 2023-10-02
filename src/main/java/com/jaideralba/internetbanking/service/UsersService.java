@@ -1,6 +1,7 @@
 package com.jaideralba.internetbanking.service;
 
 import com.jaideralba.internetbanking.entity.UserEntity;
+import com.jaideralba.internetbanking.exception.DuplicatedAccountException;
 import com.jaideralba.internetbanking.exception.InvalidUserIdException;
 import com.jaideralba.internetbanking.exception.UserNotFoundException;
 import com.jaideralba.internetbanking.mapper.UserMapper;
@@ -8,8 +9,11 @@ import com.jaideralba.internetbanking.model.UserRequest;
 import com.jaideralba.internetbanking.model.UserResponse;
 import com.jaideralba.internetbanking.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -25,6 +29,9 @@ public class UsersService implements Users {
     @Autowired
     private UserMapper mapper;
 
+    @Value("${business.exclusivePlanBalanceTrashold}")
+    private BigDecimal EXCLUSIVE_PLAN_BALANCE_TRASHOLD;
+
     @Override
     public UserResponse get(Long id) {
         UserEntity foundUser = repository.findById(id).orElseThrow(UserNotFoundException::new);
@@ -33,11 +40,11 @@ public class UsersService implements Users {
 
     @Override
     public List<UserResponse> listAll() {
-        Iterable<UserEntity> entities = repository.findAll();
+        Iterable<UserEntity> foundUsers = repository.findAll();
 
-        Stream<UserEntity> entityStream = StreamSupport.stream(entities.spliterator(), false);
+        Stream<UserEntity> foundUsersStream = StreamSupport.stream(foundUsers.spliterator(), false);
 
-        return entityStream
+        return foundUsersStream
                 .map(mapper::toModel)
                 .collect(Collectors.toList());
     }
@@ -46,13 +53,13 @@ public class UsersService implements Users {
     public UserResponse create(UserRequest user) {
         clearUserId(user);
 
-        UserEntity entity = mapper.toEntity(user);
+        UserEntity userEntity = mapper.toEntity(user);
 
-        entity.calculateExclusivePlan();
+        userEntity.setExclusivePlan(isUserEligibleForExclusivePlan(userEntity));
 
-        UserResponse createdUser = mapper.toModel(repository.save(entity));
+        UserEntity createdUser = saveUserEntity(userEntity);
 
-        return createdUser;
+        return mapper.toModel(createdUser);
     }
 
     @Override
@@ -61,11 +68,11 @@ public class UsersService implements Users {
 
         UserEntity userEntity = mapper.toEntity(user);
 
-        userEntity.calculateExclusivePlan();
+        userEntity.setExclusivePlan(isUserEligibleForExclusivePlan(userEntity));
 
-        UserResponse updatedUser = mapper.toModel(repository.save(userEntity));
+        UserEntity updatedUser = saveUserEntity(userEntity);
 
-        return updatedUser;
+        return mapper.toModel(updatedUser);
     }
 
     @Override
@@ -74,11 +81,11 @@ public class UsersService implements Users {
 
         mapper.partialToEntity(foundUser, userRequest);
 
-        foundUser.calculateExclusivePlan();
+        foundUser.setExclusivePlan(isUserEligibleForExclusivePlan(foundUser));
 
-        UserResponse updatedUser = mapper.toModel(repository.save(foundUser));
+        UserEntity updatedUser = saveUserEntity(foundUser);
 
-        return updatedUser;
+        return mapper.toModel(updatedUser);
     }
 
     @Override
@@ -103,5 +110,26 @@ public class UsersService implements Users {
 
     private void clearUserId(UserRequest user) {
         user.setId(null);
+    }
+
+    public boolean isUserEligibleForExclusivePlan(UserEntity user){
+        return user.getBalance().compareTo(EXCLUSIVE_PLAN_BALANCE_TRASHOLD) >= 0;
+    }
+
+    private UserEntity saveUserEntity(UserEntity userEntity) {
+        try {
+            return repository.save(userEntity);
+        }
+        catch (DataIntegrityViolationException e){
+            if(isUniqueConstraintViolation(e)){
+                throw new DuplicatedAccountException(String.format("Conta com número %s já cadastrada",
+                        userEntity.getAccountNumber()));
+            }
+            throw e;
+        }
+    }
+
+    private boolean isUniqueConstraintViolation(DataIntegrityViolationException e) {
+        return e.getMessage().contains("UK_ACCOUNTNUMBER"); // TODO: maybe there's a better way to do it
     }
 }

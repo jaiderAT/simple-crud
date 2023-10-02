@@ -1,5 +1,6 @@
 package com.jaideralba.internetbanking.handler;
 
+import com.jaideralba.internetbanking.exception.DuplicatedAccountException;
 import com.jaideralba.internetbanking.exception.InvalidUserIdException;
 import com.jaideralba.internetbanking.exception.UserNotFoundException;
 import com.jaideralba.internetbanking.model.error.CustomError;
@@ -21,10 +22,10 @@ import java.util.stream.Collectors;
 public class RestExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<CustomError> handleGenericException(Exception exception){
         return new ResponseEntity<>(new CustomError("Erro inesperado", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                exception.getMessage()), HttpStatus.BAD_REQUEST);
+                exception.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler({InvalidUserIdException.class, UserNotFoundException.class})
@@ -32,6 +33,13 @@ public class RestExceptionHandler {
     public ResponseEntity<CustomError> handleUserNotFoundException(Exception exception){
         return new ResponseEntity<>(new CustomError("Usuário não encontrado", HttpStatus.NOT_FOUND.value(),
                 exception.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DuplicatedAccountException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<CustomError> handleDuplicatedAccountException(DuplicatedAccountException exception){
+        return new ResponseEntity<>(new CustomError("Erro ao processar a requisição",
+                HttpStatus.UNPROCESSABLE_ENTITY.value(), exception.getMessage()), HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
