@@ -16,12 +16,18 @@ import java.util.Date;
 @Table(name = "USERS")
 public class UserEntity {
 
+    private static final BigDecimal EXCLUSIVE_PLAN_BALANCE = new BigDecimal(100000);
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     String name;
-    Boolean exclusivePlan;
+    Boolean exclusivePlan = false;
     BigDecimal balance;
     String accountNumber;
     Date birthDate;
+
+    public void calculateExclusivePlan(){
+        exclusivePlan = balance.compareTo(EXCLUSIVE_PLAN_BALANCE) >= 0;
+    }
 }

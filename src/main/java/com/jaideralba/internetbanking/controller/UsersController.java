@@ -1,6 +1,7 @@
 package com.jaideralba.internetbanking.controller;
 
-import com.jaideralba.internetbanking.model.User;
+import com.jaideralba.internetbanking.model.UserRequest;
+import com.jaideralba.internetbanking.model.UserResponse;
 import com.jaideralba.internetbanking.service.UsersService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -19,32 +20,33 @@ public class UsersController {
     private UsersService service;
 
     @GetMapping
-    List<User> listAll() {
-        return Collections.emptyList();
+    List<UserResponse> listAll() {
+        return service.listAll();
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Busca e retorna as informações do usuário pelo ID")
-    User get(@PathVariable Long id) {
+    UserResponse get(@PathVariable Long id) {
         return service.get(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Cria novo usuário")
-    User create(@RequestBody @Valid User user) {
+    UserResponse create(@RequestBody @Valid UserRequest user) {
         return service.create(user);
     }
 
     @PutMapping
     @Operation(summary = "Atualiza dados de usuário existente")
-    User update(@RequestBody @Valid User user) {
+    UserResponse update(@RequestBody @Valid UserRequest user) {
         return service.update(user);
     }
 
-    @PatchMapping("/{id}") // TODO: review this
-    User updatePartially(@RequestBody User user, @PathVariable Long id) {
-        return new User();
+    @PatchMapping("/{id}")
+    UserResponse updatePartial(@RequestBody UserRequest user, @PathVariable Long id) {
+        user.setId(id);
+        return service.updatePartially(user);
     }
 
     @DeleteMapping("/{id}")

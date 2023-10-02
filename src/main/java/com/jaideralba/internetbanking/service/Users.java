@@ -1,17 +1,20 @@
 package com.jaideralba.internetbanking.service;
 
-import com.jaideralba.internetbanking.model.User;
+import com.jaideralba.internetbanking.model.UserRequest;
+import com.jaideralba.internetbanking.model.UserResponse;
+
+import java.util.List;
 
 public interface Users {
-    User get(Long id);
+    UserRequest get(Long id);
 
-    User listAll();
+    List<UserResponse> listAll();
 
-    User create(User user);
+    UserRequest create(UserRequest user);
 
-    User update(User user);
+    UserRequest update(UserRequest user);
 
-    User updatePartially(User user);
+    UserRequest updatePartially(UserRequest user);
 
     void delete(Long id);
 

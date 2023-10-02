@@ -4,12 +4,17 @@ import com.jaideralba.internetbanking.entity.UserEntity;
 import com.jaideralba.internetbanking.exception.InvalidUserIdException;
 import com.jaideralba.internetbanking.exception.UserNotFoundException;
 import com.jaideralba.internetbanking.mapper.UserMapper;
-import com.jaideralba.internetbanking.model.User;
+import com.jaideralba.internetbanking.model.UserRequest;
+import com.jaideralba.internetbanking.model.UserResponse;
 import com.jaideralba.internetbanking.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Service
 public class UsersService implements Users {
@@ -21,36 +26,59 @@ public class UsersService implements Users {
     private UserMapper mapper;
 
     @Override
-    public User get(Long id) {
+    public UserResponse get(Long id) {
         UserEntity foundUser = repository.findById(id).orElseThrow(UserNotFoundException::new);
         return mapper.toModel(foundUser);
     }
 
     @Override
-    public User listAll() {
-        return null;
+    public List<UserResponse> listAll() {
+        Iterable<UserEntity> entities = repository.findAll();
+
+        Stream<UserEntity> entityStream = StreamSupport.stream(entities.spliterator(), false);
+
+        return entityStream
+                .map(mapper::toModel)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public User create(User user) {
+    public UserResponse create(UserRequest user) {
         clearUserId(user);
+
         UserEntity entity = mapper.toEntity(user);
-        User createdUser = mapper.toModel(repository.save(entity));
+
+        entity.calculateExclusivePlan();
+
+        UserResponse createdUser = mapper.toModel(repository.save(entity));
+
         return createdUser;
     }
 
     @Override
-    public User update(User user) {
+    public UserResponse update(UserRequest user) {
         checkUserId(user.getId());
 
         UserEntity userEntity = mapper.toEntity(user);
-        User updatedUser = mapper.toModel(repository.save(userEntity));
+
+        userEntity.calculateExclusivePlan();
+
+        UserResponse updatedUser = mapper.toModel(repository.save(userEntity));
+
         return updatedUser;
     }
 
     @Override
-    public User updatePartially(User user) {
-        return null;
+    public UserResponse updatePartially(UserRequest userRequest) {
+        UserEntity foundUser = repository.findById(userRequest.getId()).orElseThrow(UserNotFoundException::new);
+
+        mapper.partialToEntity(foundUser, userRequest);
+
+        foundUser.calculateExclusivePlan();
+
+        UserResponse updatedUser = mapper.toModel(repository.save(foundUser));
+
+        return updatedUser;
     }
 
     @Override
@@ -73,7 +101,7 @@ public class UsersService implements Users {
         return Objects.nonNull(id) && id > 0;
     }
 
-    private void clearUserId(User user) {
+    private void clearUserId(UserRequest user) {
         user.setId(null);
     }
 }

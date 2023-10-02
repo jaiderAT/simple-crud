@@ -14,7 +14,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class UserRequest {
 
     @Schema(description = "Número identificador do usuário", example = "1234")
     Long id;
@@ -23,10 +23,6 @@ public class User {
     @NotEmpty
     @Size(min=3, max=200)
     String name;
-
-    @Schema(description = "Identificador booleano se a conta possui 'Plano Exclusivo'", example = "true")
-    @NotNull
-    Boolean exclusivePlan;
 
     @Schema(description = "Saldo na conta bancária", example = "5480.55")
     @NotNull
