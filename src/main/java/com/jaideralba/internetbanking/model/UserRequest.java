@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -35,8 +35,8 @@ public class UserRequest {
     String accountNumber;
 
     @Schema(type="string", description = "Data de nascimento do titular da conta bancária", example = "22/07/1988")
-    @JsonFormat(pattern = "dd/MM/yyyy", lenient = OptBoolean.FALSE)
+    @JsonFormat(pattern = "dd/MM/yyyy", shape = JsonFormat.Shape.STRING)
     @NotNull
-    Date birthDate;
+    LocalDate birthDate;
 
 }

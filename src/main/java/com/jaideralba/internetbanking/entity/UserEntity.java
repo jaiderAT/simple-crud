@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -23,5 +23,5 @@ public class UserEntity {
     Boolean exclusivePlan = false;
     BigDecimal balance;
     String accountNumber;
-    Date birthDate;
+    LocalDate birthDate;
 }
