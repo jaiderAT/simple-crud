@@ -1,4 +1,4 @@
-package com.jaideralba.internetbanking.handler;
+package com.jaideralba.internetbanking.exception.handler;
 
 import com.jaideralba.internetbanking.exception.DuplicatedAccountException;
 import com.jaideralba.internetbanking.exception.InvalidUserIdException;

@@ -264,7 +264,7 @@ public class UsersServiceTest {
         UserEntity userEntity = new UserEntity();
         when(repository.findAll()).thenReturn(Collections.singletonList(userEntity));
 
-        UserResponse userResponse = new UserResponse(); // You should create a UserResponse object here
+        UserResponse userResponse = new UserResponse();
         when(mapper.toModel(userEntity)).thenReturn(userResponse);
 
         List<UserResponse> result = service.listAll();
